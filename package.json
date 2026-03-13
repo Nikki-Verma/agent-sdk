@@ -1,0 +1,57 @@
+{
+  "name": "@simplai/voice-agent-sdk",
+  "version": "0.1.0",
+  "description": "SimplAI Voice Agent SDK - React hooks for text chat and voice agent integration",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.mjs",
+      "require": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "sideEffects": false,
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "lint": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "peerDependencies": {
+    "react": ">=17.0.0",
+    "react-dom": ">=17.0.0"
+  },
+  "dependencies": {
+    "@sapphi-red/web-noise-suppressor": "^0.3.5",
+    "axios": "^1.8.4",
+    "livekit-client": "^2.9.5",
+    "lodash": "^4.17.21",
+    "uuid": "^9.0.1"
+  },
+  "devDependencies": {
+    "@types/lodash": "^4.17.16",
+    "@types/react": "^18.3.18",
+    "@types/react-dom": "^18.3.5",
+    "@types/uuid": "^9.0.8",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tsup": "^8.0.0",
+    "typescript": "^5.8.2"
+  },
+  "keywords": [
+    "simplai",
+    "voice-agent",
+    "react",
+    "livekit",
+    "chat",
+    "streaming"
+  ],
+  "license": "MIT"
+}
