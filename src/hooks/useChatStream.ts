@@ -1104,13 +1104,15 @@ const useChatStream = (input: UseChatStreamInput) => {
       newMessage?: string,
       additionalConfig?: UnknownObject,
     ) => {
-      if (isLoading || chatStreaming || !(newMessage && newMessage?.trim?.())) {
+      e?.preventDefault();
+      const messageText = newMessage ?? message;
+      if (isLoading || chatStreaming || !(messageText && messageText?.trim?.())) {
         return null;
       }
       stopStreamRef.current = false;
       setIsLoading(true);
       setChatStreaming(true);
-      addMessageToChat(newMessage, "user", undefined, {
+      addMessageToChat(messageText, "user", undefined, {
         ...(artifacts?.current_index !== undefined
           ? {
               artifact_details: {
@@ -1158,7 +1160,7 @@ const useChatStream = (input: UseChatStreamInput) => {
             },
             action: "START_SCREEN",
             query: {
-              message: newMessage,
+              message: messageText,
               message_type: "text",
               message_category: "",
             },
@@ -1217,6 +1219,7 @@ const useChatStream = (input: UseChatStreamInput) => {
     [
       isLoading,
       chatStreaming,
+      message,
       chatConfig,
       conversationId,
       config,

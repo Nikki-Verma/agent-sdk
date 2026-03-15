@@ -511,7 +511,7 @@ const useLivekitAudio = ({
             RoomEvent.TrackSubscribed,
             (track, publication, participant: Participant) => {
               if (track.kind === Track.Kind.Audio) {
-                if (!hasAvatar && startSession && endSession) {
+                if (!hasAvatar) {
                   const audioElement = new Audio();
                   audioElement.srcObject = new MediaStream([
                     track.mediaStreamTrack,

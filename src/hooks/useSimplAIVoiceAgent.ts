@@ -93,6 +93,19 @@ const useSimplAIVoiceAgent = (
     customAttributes: options.customAttributes,
   });
 
+  // ─── Sync chat config when agent details load ─────────────────────────────
+  useEffect(() => {
+    if (agentDetails) {
+      chatStream.setChatConfig({
+        model: agentDetails.agent_name,
+        language_code: "EN",
+        source: "APP",
+        app_id: agentDetails.pipeline_id,
+        model_id: agentDetails.pipeline_id,
+      });
+    }
+  }, [agentDetails]);
+
   // ─── LiveKit Audio ──────────────────────────────────────────────────────────
   const livekitAudio = useLivekitAudio({
     agentDetails: {
