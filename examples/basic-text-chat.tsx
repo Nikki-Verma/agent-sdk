@@ -5,14 +5,13 @@
  * Uses `useChatStream` directly for text-only use cases.
  *
  * Usage:
- *   npm install @simplai/voice-agent-sdk react react-dom
+ *   npm install @simplai.ai/voice-agent-sdk react react-dom
  *
  * Then render <TextChatApp /> in your React tree.
  */
 
-import React from "react";
-import { SimplAIProvider, useChatStream } from "@simplai/voice-agent-sdk";
-import type { ChatMessage } from "@simplai/voice-agent-sdk";
+import type { ChatMessage } from "@simplai.ai/voice-agent-sdk";
+import { SimplAIProvider, useChatStream } from "@simplai.ai/voice-agent-sdk";
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 

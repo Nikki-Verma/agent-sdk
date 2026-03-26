@@ -1,7 +1,7 @@
 import {
-  EDGE_URL,
-  EDGE_EXTERNAL_URL,
   AGENT_SERVICE_PATH,
+  EDGE_EXTERNAL_URL,
+  EDGE_URL,
   INTERACT_SERVICE_PATH,
 } from "../constants";
 import { SDKEndpoints } from "../types";
@@ -13,7 +13,7 @@ const intractExternalBase = `${EDGE_EXTERNAL_URL}${INTERACT_SERVICE_PATH}`;
 const endpoints: SDKEndpoints = {
   agents: {
     details: `${agentBase}/agents`,
-    livekitToken: `${agentBase}/getToken`,
+    AudioToken: `${agentBase}/getToken`,
     updateArtifact: `${agentBase}/agents/artifact`,
     fetchArtifacts: `${agentBase}/agents/artifact`,
   },

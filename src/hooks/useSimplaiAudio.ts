@@ -1,9 +1,3 @@
-import { livekitTokenApi } from "../api/audio";
-import { AGENT_SOCKET_ENDPOINT, SIMD_WASM, WASM_URL, WORKLET_URL, X_PROJECT_ID } from "../constants";
-import { useSimplAIContext } from "../context/SimplAIProvider";
-import { UseLivekitAudioProps } from "../types";
-import { checkValidStringifiedJSON, getCleanMarkdownString, getErrorFromApi } from "../utils/helpers";
-import { createRoom } from "../utils/livekit";
 import {
   loadRnnoise,
   RnnoiseWorkletNode,
@@ -17,11 +11,27 @@ import {
 } from "livekit-client";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { v4 } from "uuid";
+import { audioTokenApi } from "../api/audio";
+import {
+  AGENT_SOCKET_ENDPOINT,
+  SIMD_WASM,
+  WASM_URL,
+  WORKLET_URL,
+  X_PROJECT_ID,
+} from "../constants";
+import { useSimplAIContext } from "../context/SimplAIProvider";
+import { useSimplaiAudioProps } from "../types";
+import { createRoom } from "../utils/audio";
+import {
+  checkValidStringifiedJSON,
+  getCleanMarkdownString,
+  getErrorFromApi,
+} from "../utils/helpers";
 
 /**
- * React hook for real-time voice conversation via LiveKit with a SimplAI agent.
+ * React hook for real-time voice conversation with a SimplAI agent.
  *
- * Handles the full voice lifecycle: obtaining a LiveKit token, connecting to a
+ * Handles the full voice lifecycle: obtaining a token, connecting to a
  * room, publishing a denoised microphone track (via RNNoise WASM), parsing
  * transcripts from the `DataReceived` event, and managing participants and
  * audio tracks.
@@ -45,7 +55,7 @@ import { v4 } from "uuid";
  *
  * @example
  * ```tsx
- * const { status, connectToRoom, handleDisconnect, toggleMuteLocalParticipant } = useLivekitAudio({
+ * const { status, connectToRoom, handleDisconnect, toggleMuteLocalParticipant } = useSimplaiAudio({
  *   agentDetails: { agent_id: "...", agent_name: "..." },
  *   userDetails: { name: "User", id: "user-1" },
  *   setMessages,
@@ -54,7 +64,7 @@ import { v4 } from "uuid";
  * });
  * ```
  */
-const useLivekitAudio = ({
+const useSimplaiAudio = ({
   agentDetails,
   userDetails,
   setMessages,
@@ -67,7 +77,7 @@ const useLivekitAudio = ({
   disableAgentThinkingMode,
   hasAvatar,
   projectId,
-}: UseLivekitAudioProps) => {
+}: useSimplaiAudioProps) => {
   const { config, httpClient, endpoints } = useSimplAIContext();
 
   const textEncoder = useMemo(() => {
@@ -113,10 +123,7 @@ const useLivekitAudio = ({
 
     return () => {
       localParticipant.off(RoomEvent.TrackMuted, handleMicrophoneStateChange);
-      localParticipant.off(
-        RoomEvent.TrackUnmuted,
-        handleMicrophoneStateChange,
-      );
+      localParticipant.off(RoomEvent.TrackUnmuted, handleMicrophoneStateChange);
     };
   }, [room]);
 
@@ -184,21 +191,19 @@ const useLivekitAudio = ({
           guest_user: false,
         },
       };
-      const livekitTokenResponse = await livekitTokenApi(
-        httpClient,
-        endpoints,
-        {
-          payload,
-          headers: { [X_PROJECT_ID]: conversationProjectId || config.projectId },
+      const simplaiTokenResponse = await audioTokenApi(httpClient, endpoints, {
+        payload,
+        headers: {
+          [X_PROJECT_ID]: conversationProjectId || config.projectId,
         },
-      );
+      });
 
-      if (livekitTokenResponse?.status === 200) {
+      if (simplaiTokenResponse?.status === 200) {
         if (
-          voiceConversationId !== livekitTokenResponse?.data?.conversation_id
+          voiceConversationId !== simplaiTokenResponse?.data?.conversation_id
         ) {
-          setVoiceConversationId(livekitTokenResponse?.data?.conversation_id);
-          changeConversation(livekitTokenResponse?.data?.conversation_id);
+          setVoiceConversationId(simplaiTokenResponse?.data?.conversation_id);
+          changeConversation(simplaiTokenResponse?.data?.conversation_id);
         }
         const newRoom = createRoom();
 
@@ -243,241 +248,226 @@ const useLivekitAudio = ({
               decodedData || JSON.stringify({}),
             );
 
-            parsedTranscriptObject?.segments?.map(
-              (currentTranscript: any) => {
-                const newTextObj = JSON.parse(
-                  currentTranscript?.text || JSON.stringify({}),
-                );
+            parsedTranscriptObject?.segments?.map((currentTranscript: any) => {
+              const newTextObj = JSON.parse(
+                currentTranscript?.text || JSON.stringify({}),
+              );
 
-                if (
-                  newTextObj?.role == "assistant" &&
-                  !!newTextObj?.tool_calls
-                ) {
-                  setMessages((messages: any) => {
-                    const latestMessage = messages[messages.length - 1];
+              if (newTextObj?.role == "assistant" && !!newTextObj?.tool_calls) {
+                setMessages((messages: any) => {
+                  const latestMessage = messages[messages.length - 1];
 
-                    const newTools =
-                      newTextObj?.tool_calls
-                        ?.map?.((toolData: any) => {
-                          if (Object.keys(toolData || {})?.length > 0) {
-                            const functionDetails = toolData?.function || {};
+                  const newTools =
+                    newTextObj?.tool_calls
+                      ?.map?.((toolData: any) => {
+                        if (Object.keys(toolData || {})?.length > 0) {
+                          const functionDetails = toolData?.function || {};
+                          return {
+                            ...(toolData || {}),
+                            ...(functionDetails || {}),
+                          };
+                        } else {
+                          return null;
+                        }
+                      })
+                      ?.filter?.((toolData: any) => !!toolData) || null;
+                  newConversationMessageAddedToChat.current = true;
+                  if (latestMessage?.role === "SimplAi") {
+                    return [
+                      ...messages.slice(0, -1),
+                      { ...latestMessage, tools: newTools },
+                    ];
+                  }
+                  return [
+                    ...messages,
+                    {
+                      role: "SimplAi",
+                      content: "",
+                      tools: newTools,
+                      id: v4(),
+                    },
+                  ];
+                });
+              } else if (
+                newTextObj?.role == "tool" &&
+                !!newTextObj?.tool_call_id
+              ) {
+                setMessages((messages: any) => {
+                  const latestMessage = messages[messages.length - 1];
+
+                  if (latestMessage?.role === "SimplAi") {
+                    const newToolwithDetails = latestMessage?.tools
+                      ? latestMessage?.tools?.map?.((toolData: any) => {
+                          if (toolData?.id === newTextObj?.tool_call_id) {
                             return {
-                              ...(toolData || {}),
-                              ...(functionDetails || {}),
+                              ...toolData,
+                              content: `${toolData?.content || ""}${newTextObj?.content || ""}`,
                             };
                           } else {
-                            return null;
+                            return { ...toolData };
                           }
                         })
-                        ?.filter?.((toolData: any) => !!toolData) || null;
-                    newConversationMessageAddedToChat.current = true;
-                    if (latestMessage?.role === "SimplAi") {
-                      return [
-                        ...messages.slice(0, -1),
-                        { ...latestMessage, tools: newTools },
-                      ];
+                      : null;
+                    return [
+                      ...messages.slice(0, -1),
+                      { ...latestMessage, tools: newToolwithDetails },
+                    ];
+                  }
+
+                  return [...messages];
+                });
+              } else if (
+                newTextObj?.role == "assistant" &&
+                !!newTextObj?.citations
+              ) {
+                setMessages((messages: any) => {
+                  const latestMessage = messages[messages.length - 1];
+
+                  if (latestMessage?.role === "SimplAi") {
+                    const citations = {
+                      ...(latestMessage?.citations || {}),
+                    };
+                    if (newTextObj?.citations?.nodes) {
+                      newTextObj?.citations?.nodes?.forEach?.(
+                        (citationChunk: any) => {
+                          const fileName =
+                            citationChunk?.metadata?.file_name ||
+                            citationChunk?.metadata?.filename;
+                          if (fileName) {
+                            citations[fileName] = citations[fileName]
+                              ? [...citations[fileName], citationChunk]
+                              : [citationChunk];
+                          }
+                        },
+                      );
+                    } else if (
+                      Array.isArray(newTextObj?.citations) &&
+                      newTextObj?.citations?.length > 0
+                    ) {
+                      newTextObj?.citations?.forEach((citationChunk: any) => {
+                        const fileName =
+                          citationChunk?.doc?.file_name ||
+                          citationChunk?.doc?.filename;
+                        if (fileName) {
+                          citations[fileName] = citations[fileName]
+                            ? [...citations[fileName], citationChunk]
+                            : [citationChunk];
+                        }
+                      });
                     }
+                    return [
+                      ...messages.slice(0, -1),
+                      {
+                        ...latestMessage,
+                        citations:
+                          Object.keys(citations).length > 0 ? citations : null,
+                      },
+                    ];
+                  }
+
+                  return [...messages];
+                });
+              } else if (
+                newTextObj?.role == "assistant" ||
+                newTextObj?.role == "user"
+              ) {
+                if (
+                  handleChunkSpeak &&
+                  newTextObj?.role == "assistant" &&
+                  newTextObj?.media_type === "avatar_voice"
+                ) {
+                  handleChunkSpeak(getCleanMarkdownString(newTextObj?.content));
+                  return null;
+                }
+                setMessages((messages: any) => {
+                  const latestMessage = messages[messages.length - 1];
+
+                  if (!!!newConversationMessageAddedToChat?.current) {
+                    newConversationMessageAddedToChat.current = true;
                     return [
                       ...messages,
                       {
-                        role: "SimplAi",
-                        content: "",
-                        tools: newTools,
+                        role: newTextObj?.role == "user" ? "user" : "SimplAi",
+                        content: newTextObj?.content,
                         id: v4(),
                       },
                     ];
-                  });
-                } else if (
-                  newTextObj?.role == "tool" &&
-                  !!newTextObj?.tool_call_id
-                ) {
-                  setMessages((messages: any) => {
-                    const latestMessage = messages[messages.length - 1];
-
-                    if (latestMessage?.role === "SimplAi") {
-                      const newToolwithDetails = latestMessage?.tools
-                        ? latestMessage?.tools?.map?.((toolData: any) => {
-                            if (toolData?.id === newTextObj?.tool_call_id) {
-                              return {
-                                ...toolData,
-                                content: `${toolData?.content || ""}${newTextObj?.content || ""}`,
-                              };
-                            } else {
-                              return { ...toolData };
-                            }
-                          })
-                        : null;
-                      return [
-                        ...messages.slice(0, -1),
-                        { ...latestMessage, tools: newToolwithDetails },
-                      ];
-                    }
-
-                    return [...messages];
-                  });
-                } else if (
-                  newTextObj?.role == "assistant" &&
-                  !!newTextObj?.citations
-                ) {
-                  setMessages((messages: any) => {
-                    const latestMessage = messages[messages.length - 1];
-
-                    if (latestMessage?.role === "SimplAi") {
-                      const citations = {
-                        ...(latestMessage?.citations || {}),
-                      };
-                      if (newTextObj?.citations?.nodes) {
-                        newTextObj?.citations?.nodes?.forEach?.(
-                          (citationChunk: any) => {
-                            const fileName =
-                              citationChunk?.metadata?.file_name ||
-                              citationChunk?.metadata?.filename;
-                            if (fileName) {
-                              citations[fileName] = citations[fileName]
-                                ? [...citations[fileName], citationChunk]
-                                : [citationChunk];
-                            }
-                          },
-                        );
-                      } else if (
-                        Array.isArray(newTextObj?.citations) &&
-                        newTextObj?.citations?.length > 0
-                      ) {
-                        newTextObj?.citations?.forEach(
-                          (citationChunk: any) => {
-                            const fileName =
-                              citationChunk?.doc?.file_name ||
-                              citationChunk?.doc?.filename;
-                            if (fileName) {
-                              citations[fileName] = citations[fileName]
-                                ? [...citations[fileName], citationChunk]
-                                : [citationChunk];
-                            }
-                          },
-                        );
-                      }
+                  }
+                  if (newTextObj?.role == "user") {
+                    if (latestMessage?.role === "user") {
                       return [
                         ...messages.slice(0, -1),
                         {
                           ...latestMessage,
-                          citations:
-                            Object.keys(citations).length > 0
-                              ? citations
-                              : null,
+                          content: `${latestMessage?.content}${newTextObj?.content}`,
                         },
                       ];
-                    }
-
-                    return [...messages];
-                  });
-                } else if (
-                  newTextObj?.role == "assistant" ||
-                  newTextObj?.role == "user"
-                ) {
-                  if (
-                    handleChunkSpeak &&
-                    newTextObj?.role == "assistant" &&
-                    newTextObj?.media_type === "avatar_voice"
-                  ) {
-                    handleChunkSpeak(
-                      getCleanMarkdownString(newTextObj?.content),
-                    );
-                    return null;
-                  }
-                  setMessages((messages: any) => {
-                    const latestMessage = messages[messages.length - 1];
-
-                    if (!!!newConversationMessageAddedToChat?.current) {
-                      newConversationMessageAddedToChat.current = true;
+                    } else {
                       return [
                         ...messages,
                         {
-                          role:
-                            newTextObj?.role == "user" ? "user" : "SimplAi",
+                          role: "user",
                           content: newTextObj?.content,
                           id: v4(),
                         },
                       ];
                     }
-                    if (newTextObj?.role == "user") {
-                      if (latestMessage?.role === "user") {
-                        return [
-                          ...messages.slice(0, -1),
-                          {
-                            ...latestMessage,
-                            content: `${latestMessage?.content}${newTextObj?.content}`,
-                          },
-                        ];
-                      } else {
-                        return [
-                          ...messages,
-                          {
-                            role: "user",
-                            content: newTextObj?.content,
-                            id: v4(),
-                          },
-                        ];
-                      }
+                  } else {
+                    if (latestMessage?.role === "user") {
+                      return [
+                        ...messages,
+                        {
+                          role: "SimplAi",
+                          content: newTextObj?.content,
+                          id: v4(),
+                        },
+                      ];
                     } else {
-                      if (latestMessage?.role === "user") {
-                        return [
-                          ...messages,
-                          {
-                            role: "SimplAi",
-                            content: newTextObj?.content,
-                            id: v4(),
-                          },
-                        ];
-                      } else {
-                        return [
-                          ...messages.slice(0, -1),
-                          {
-                            ...latestMessage,
-                            content: `${latestMessage?.content}${newTextObj?.content}`,
-                          },
-                        ];
-                      }
-                    }
-                  });
-                } else if (newTextObj?.role == "trace") {
-                  const trace = checkValidStringifiedJSON(newTextObj?.content)
-                    ? JSON.parse(newTextObj?.content ?? JSON.stringify(""))
-                    : {};
-                  setMessages((messages: any) => {
-                    const latestMessage = messages[messages.length - 1];
-
-                    if (latestMessage?.role === "SimplAi") {
                       return [
                         ...messages.slice(0, -1),
-                        { ...latestMessage, trace: trace },
+                        {
+                          ...latestMessage,
+                          content: `${latestMessage?.content}${newTextObj?.content}`,
+                        },
                       ];
                     }
+                  }
+                });
+              } else if (newTextObj?.role == "trace") {
+                const trace = checkValidStringifiedJSON(newTextObj?.content)
+                  ? JSON.parse(newTextObj?.content ?? JSON.stringify(""))
+                  : {};
+                setMessages((messages: any) => {
+                  const latestMessage = messages[messages.length - 1];
 
+                  if (latestMessage?.role === "SimplAi") {
                     return [
-                      ...messages,
-                      {
-                        role: "SimplAi",
-                        content: "",
-                        trace: trace,
-                        id: v4(),
-                      },
+                      ...messages.slice(0, -1),
+                      { ...latestMessage, trace: trace },
                     ];
-                  });
-                }
-              },
-            );
+                  }
+
+                  return [
+                    ...messages,
+                    {
+                      role: "SimplAi",
+                      content: "",
+                      trace: trace,
+                      id: v4(),
+                    },
+                  ];
+                });
+              }
+            });
           })
           ?.on(RoomEvent.SignalConnected, () => {})
-          ?.on(
-            RoomEvent.ParticipantConnected,
-            (participant: Participant) => {
-              if (participant?.isAgent) {
-                setStatus("connected");
-                setAgentConnected(true);
-              }
-              setParticipants((prev) => [...prev, participant]);
-            },
-          )
+          ?.on(RoomEvent.ParticipantConnected, (participant: Participant) => {
+            if (participant?.isAgent) {
+              setStatus("connected");
+              setAgentConnected(true);
+            }
+            setParticipants((prev) => [...prev, participant]);
+          })
           ?.on(
             RoomEvent.ParticipantDisconnected,
             (participant: Participant) => {
@@ -486,9 +476,7 @@ const useLivekitAudio = ({
                 newRoom.disconnect();
                 return null;
               }
-              setParticipants((prev) =>
-                prev.filter((p) => p !== participant),
-              );
+              setParticipants((prev) => prev.filter((p) => p !== participant));
               setAudioTracks((prev) => {
                 const updatedTracks = { ...prev };
                 delete updatedTracks[participant.identity];
@@ -496,17 +484,14 @@ const useLivekitAudio = ({
               });
             },
           )
-          ?.on(
-            RoomEvent.LocalTrackPublished,
-            (publication, participant) => {
-              if (publication?.track?.kind === Track.Kind.Audio) {
-                setAudioTracks((prev) => ({
-                  ...prev,
-                  [participant.identity]: publication?.track || null,
-                }));
-              }
-            },
-          )
+          ?.on(RoomEvent.LocalTrackPublished, (publication, participant) => {
+            if (publication?.track?.kind === Track.Kind.Audio) {
+              setAudioTracks((prev) => ({
+                ...prev,
+                [participant.identity]: publication?.track || null,
+              }));
+            }
+          })
           ?.on(
             RoomEvent.TrackSubscribed,
             (track, publication, participant: Participant) => {
@@ -517,8 +502,7 @@ const useLivekitAudio = ({
                     track.mediaStreamTrack,
                   ]);
                   audioElement.play();
-                  remoteAudioRefs.current[participant.identity] =
-                    audioElement;
+                  remoteAudioRefs.current[participant.identity] = audioElement;
                 }
 
                 setAudioTracks((prev) => ({
@@ -541,14 +525,11 @@ const useLivekitAudio = ({
               }));
             },
           )
-          ?.on(
-            RoomEvent.TranscriptionReceived,
-            () => {},
-          );
+          ?.on(RoomEvent.TranscriptionReceived, () => {});
 
         await newRoom.connect(
           agentDetails?.socketEndpoint ?? AGENT_SOCKET_ENDPOINT,
-          livekitTokenResponse?.data?.token,
+          simplaiTokenResponse?.data?.token,
           { autoSubscribe: true },
         );
         setRoom(newRoom);
@@ -599,7 +580,7 @@ const useLivekitAudio = ({
 
         setParticipants(allParticipants);
       } else {
-        setError(getErrorFromApi(livekitTokenResponse));
+        setError(getErrorFromApi(simplaiTokenResponse));
         setStatus("error");
       }
     } catch (err) {
@@ -628,4 +609,4 @@ const useLivekitAudio = ({
   };
 };
 
-export default useLivekitAudio;
+export default useSimplaiAudio;

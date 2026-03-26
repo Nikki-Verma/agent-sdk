@@ -24,7 +24,7 @@ export interface SimplAISDKConfig {
 export interface SDKEndpoints {
   agents: {
     details: string;
-    livekitToken: string;
+    AudioToken: string;
     updateArtifact: string;
     fetchArtifacts: string;
   };
@@ -132,7 +132,7 @@ export enum ChunkType {
   ARTIFACT_COMPLETED = "artifact_completed",
 }
 
-// ─── Voice / LiveKit Types ────────────────────────────────────────────────────
+// ─── Voice Types ────────────────────────────────────────────────────
 
 export type VoiceStatus = "idle" | "connecting" | "connected" | "error";
 
@@ -152,7 +152,7 @@ export interface AgentDetails {
   capabilities_url?: string;
 }
 
-export type UseLivekitAudioProps = {
+export type useSimplaiAudioProps = {
   agentDetails: {
     agent_id: any;
     agent_name?: any;
@@ -247,7 +247,7 @@ export interface UseChatStreamReturn {
   resetConversation: () => Promise<void>;
 }
 
-export interface UseLivekitAudioReturn {
+export interface useSimplaiAudioReturn {
   status: VoiceStatus;
   room: Room | null;
   participants: Participant[];

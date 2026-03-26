@@ -5,17 +5,17 @@
  * both text chat and voice conversation capabilities.
  *
  * Usage:
- *   npm install @simplai/voice-agent-sdk react react-dom
+ *   npm install @simplai.ai/voice-agent-sdk react react-dom
  *
  * Then render <VoiceAgentApp /> in your React tree.
  */
 
-import React, { useEffect, useRef } from "react";
+import type { ChatMessage, VoiceStatus } from "@simplai.ai/voice-agent-sdk";
 import {
   SimplAIProvider,
   useSimplAIVoiceAgent,
-} from "@simplai/voice-agent-sdk";
-import type { ChatMessage, VoiceStatus } from "@simplai/voice-agent-sdk";
+} from "@simplai.ai/voice-agent-sdk";
+import { useEffect, useRef } from "react";
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 
@@ -139,7 +139,10 @@ function VoiceAgent() {
             Agent ID: {agentDetails?.agent_id}
           </p>
         </div>
-        <VoiceStatusBadge status={voiceStatus} agentConnected={agentConnected} />
+        <VoiceStatusBadge
+          status={voiceStatus}
+          agentConnected={agentConnected}
+        />
       </div>
 
       {/* Messages */}
@@ -446,7 +449,8 @@ function VoiceStatusBadge({
       <span style={{ fontSize: 13, color: "#666" }}>
         {status === "idle" && "Voice: Off"}
         {status === "connecting" && "Connecting..."}
-        {status === "connected" && (agentConnected ? "Agent Connected" : "Waiting for Agent")}
+        {status === "connected" &&
+          (agentConnected ? "Agent Connected" : "Waiting for Agent")}
         {status === "error" && "Voice Error"}
       </span>
     </div>

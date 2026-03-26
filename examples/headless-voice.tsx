@@ -10,17 +10,17 @@
  * - You want to wire voice transcripts into an existing state system
  *
  * Usage:
- *   npm install @simplai/voice-agent-sdk react react-dom
+ *   npm install @simplai.ai/voice-agent-sdk react react-dom
  */
 
-import React, { useEffect, useState } from "react";
+import type { AgentDetails, ChatMessage } from "@simplai.ai/voice-agent-sdk";
 import {
+  fetchAgentDetailsApi,
   SimplAIProvider,
+  useSimplaiAudio,
   useSimplAIContext,
-  useLivekitAudio,
-} from "@simplai/voice-agent-sdk";
-import type { ChatMessage, AgentDetails } from "@simplai/voice-agent-sdk";
-import { fetchAgentDetailsApi } from "@simplai/voice-agent-sdk";
+} from "@simplai.ai/voice-agent-sdk";
+import React, { useEffect, useState } from "react";
 
 // ─── Configuration ────────────────────────────────────────────────────────────
 
@@ -82,7 +82,7 @@ function HeadlessVoice() {
     handleDisconnect,
     interuptAgent,
     toggleMuteLocalParticipant,
-  } = useLivekitAudio({
+  } = useSimplaiAudio({
     agentDetails: {
       agent_id: agentDetails?.agent_id || config.agentId,
       agent_name: agentDetails?.agent_name,
@@ -198,7 +198,9 @@ function HeadlessVoice() {
                 borderBottom: "1px solid #f3f4f6",
               }}
             >
-              <strong style={{ color: msg.role === "user" ? "#4F46E5" : "#059669" }}>
+              <strong
+                style={{ color: msg.role === "user" ? "#4F46E5" : "#059669" }}
+              >
                 {msg.role === "user" ? "You" : "Agent"}:
               </strong>{" "}
               {msg.content}

@@ -1,19 +1,19 @@
-# @simplai/voice-agent-sdk
+# @simplai.ai/voice-agent-sdk
 
 React hooks SDK for integrating SimplAI voice and text chat agents into your application.
 
-Provides a single unified hook (`useSimplAIVoiceAgent`) that handles agent configuration fetching, SSE-based text chat streaming, and real-time voice conversation via LiveKit - all wired together out of the box.
+Provides a single unified hook (`useSimplAIVoiceAgent`) that handles agent configuration fetching, SSE-based text chat streaming, and real-time voice conversation - all wired together out of the box.
 
 ---
 
 ## Installation
 
 ```bash
-npm install @simplai/voice-agent-sdk
+npm install @simplai.ai/voice-agent-sdk
 # or
-yarn add @simplai/voice-agent-sdk
+yarn add @simplai.ai/voice-agent-sdk
 # or
-pnpm add @simplai/voice-agent-sdk
+pnpm add @simplai.ai/voice-agent-sdk
 ```
 
 ### Peer Dependencies
@@ -31,7 +31,7 @@ npm install react react-dom
 ### 1. Wrap your app with the provider
 
 ```tsx
-import { SimplAIProvider } from "@simplai/voice-agent-sdk";
+import { SimplAIProvider } from "@simplai.ai/voice-agent-sdk";
 
 function App() {
   return (
@@ -53,7 +53,7 @@ function App() {
 ### 2. Use the composite hook
 
 ```tsx
-import { useSimplAIVoiceAgent } from "@simplai/voice-agent-sdk";
+import { useSimplAIVoiceAgent } from "@simplai.ai/voice-agent-sdk";
 
 function ChatBot() {
   const {
@@ -131,14 +131,14 @@ function ChatBot() {
 
 ### `SimplAISDKConfig`
 
-| Property   | Type     | Required | Description                                         |
-| ---------- | -------- | -------- | --------------------------------------------------- |
-| `agentId`  | `string` | Yes      | The ID of your SimplAI agent                        |
-| `apiKey`   | `string` | Yes      | Your SimplAI API key (passed as `PIM-SID` header)   |
-| `tenantId` | `string` | Yes      | Your tenant identifier                              |
-| `projectId`| `string` | Yes      | The project the agent belongs to                    |
-| `userId`   | `string` | Yes      | Current user's unique identifier                    |
-| `deviceId` | `string` | No       | Custom device identifier (defaults to `"simplai"`)  |
+| Property    | Type     | Required | Description                                        |
+| ----------- | -------- | -------- | -------------------------------------------------- |
+| `agentId`   | `string` | Yes      | The ID of your SimplAI agent                       |
+| `apiKey`    | `string` | Yes      | Your SimplAI API key (passed as `PIM-SID` header)  |
+| `tenantId`  | `string` | Yes      | Your tenant identifier                             |
+| `projectId` | `string` | Yes      | The project the agent belongs to                   |
+| `userId`    | `string` | Yes      | Current user's unique identifier                   |
+| `deviceId`  | `string` | No       | Custom device identifier (defaults to `"simplai"`) |
 
 ---
 
@@ -151,9 +151,7 @@ function ChatBot() {
 Wraps your component tree and provides the SDK context (HTTP client with auth headers, endpoint config) to all child hooks.
 
 ```tsx
-<SimplAIProvider config={sdkConfig}>
-  {children}
-</SimplAIProvider>
+<SimplAIProvider config={sdkConfig}>{children}</SimplAIProvider>
 ```
 
 ---
@@ -166,92 +164,92 @@ The primary hook. Fetches agent details automatically, initialises text chat and
 
 **Options** (`UseSimplAIVoiceAgentOptions`):
 
-| Option                      | Type         | Description                                              |
-| --------------------------- | ------------ | -------------------------------------------------------- |
-| `conversationId`            | `string`     | Resume an existing conversation                          |
-| `customAttributes`          | `object`     | Additional attributes sent with chat requests            |
-| `startSession`              | `() => void` | Callback when voice session starts (avatar mode)         |
-| `endSession`                | `() => void` | Callback when voice session ends (avatar mode)           |
-| `handleChunkSpeak`          | `(text: string) => void` | Receive avatar-voice text chunks              |
-| `enableAgentThinkingMode`   | `() => void` | Callback when agent enters thinking mode                 |
-| `disableAgentThinkingMode`  | `() => void` | Callback when agent exits thinking mode                  |
-| `hasAvatar`                 | `boolean`    | Set `true` if using avatar mode (changes audio routing)  |
+| Option                     | Type                     | Description                                             |
+| -------------------------- | ------------------------ | ------------------------------------------------------- |
+| `conversationId`           | `string`                 | Resume an existing conversation                         |
+| `customAttributes`         | `object`                 | Additional attributes sent with chat requests           |
+| `startSession`             | `() => void`             | Callback when voice session starts (avatar mode)        |
+| `endSession`               | `() => void`             | Callback when voice session ends (avatar mode)          |
+| `handleChunkSpeak`         | `(text: string) => void` | Receive avatar-voice text chunks                        |
+| `enableAgentThinkingMode`  | `() => void`             | Callback when agent enters thinking mode                |
+| `disableAgentThinkingMode` | `() => void`             | Callback when agent exits thinking mode                 |
+| `hasAvatar`                | `boolean`                | Set `true` if using avatar mode (changes audio routing) |
 
 **Return value** (`UseSimplAIVoiceAgentReturn`):
 
 <details>
 <summary><strong>Agent State</strong></summary>
 
-| Field                  | Type                | Description                        |
-| ---------------------- | ------------------- | ---------------------------------- |
-| `agentDetails`         | `AgentDetails\|null`| Fetched agent configuration        |
-| `agentLoading`         | `boolean`           | Agent details are loading          |
-| `agentError`           | `string\|null`      | Agent fetch error message          |
-| `refetchAgentDetails`  | `() => void`        | Manually re-fetch agent details    |
+| Field                 | Type                 | Description                     |
+| --------------------- | -------------------- | ------------------------------- |
+| `agentDetails`        | `AgentDetails\|null` | Fetched agent configuration     |
+| `agentLoading`        | `boolean`            | Agent details are loading       |
+| `agentError`          | `string\|null`       | Agent fetch error message       |
+| `refetchAgentDetails` | `() => void`         | Manually re-fetch agent details |
 
 </details>
 
 <details>
 <summary><strong>Text Chat</strong></summary>
 
-| Field                        | Type                                   | Description                                                      |
-| ---------------------------- | -------------------------------------- | ---------------------------------------------------------------- |
-| `messages`                   | `ChatMessage[]`                        | Array of conversation messages                                   |
-| `setMessages`                | `Dispatch<SetStateAction<ChatMessage[]>>`| Directly set messages                                          |
-| `input`                      | `string`                               | Current text input value                                         |
-| `setInput`                   | `Dispatch<SetStateAction<string>>`     | Set input value                                                  |
-| `handleInputChange`          | `(e) => void`                          | Bind to `<input onChange>`                                       |
-| `handleSubmit`               | `(e?, newMessage?, additionalConfig?) => Promise` | Submit a message                                    |
-| `isLoading`                  | `boolean`                              | Waiting for AI response                                          |
-| `chatStreaming`              | `boolean`                              | AI response is actively streaming                                |
-| `stopStream`                 | `() => Promise<void>`                  | Abort the active stream                                          |
-| `chatConfig`                 | `ChatConfig`                           | Current chat configuration                                       |
-| `setChatConfig`              | `Dispatch<SetStateAction<any>>`        | Update chat config                                               |
-| `conversationId`             | `string\|undefined`                    | Active conversation ID                                           |
-| `setConversationId`          | `Dispatch<SetStateAction<string\|undefined>>` | Set conversation ID                                     |
-| `changeConversation`         | `(convId) => Promise<void>`            | Load a different conversation                                    |
-| `changeConversationLoading`  | `boolean`                              | Conversation switch in progress                                  |
-| `submitMessageFeedback`      | `(liked, messageObj, remark?) => Promise<void>` | Submit like/dislike feedback                        |
-| `stopConversation`           | `() => Promise<void>`                  | Stop the current conversation on the server                      |
-| `resetConversation`          | `() => Promise<void>`                  | Clear all state and start fresh                                  |
-| `artifacts`                  | `ChatArtifacts`                        | Code/text artifacts from the agent                               |
-| `setArtifacts`               | `Dispatch<SetStateAction<ChatArtifacts>>`| Set artifacts directly                                         |
-| `agentArtifactDrawerVisible` | `boolean`                              | Artifact drawer visibility state                                 |
-| `setAgentArtifactDrawerVisible` | `Dispatch<SetStateAction<boolean>>` | Toggle artifact drawer                                           |
-| `closeAgentArtifactDrawer`   | `() => void`                           | Close the artifact drawer                                        |
-| `updateArtifact`             | `function`                             | Persist artifact changes to the server                           |
-| `agentToolDrawerConfig`      | `AgentToolDrawerConfig`                | Tool drawer configuration                                        |
-| `setAgentToolDrawerConfig`   | `Dispatch<SetStateAction<...>>`        | Set tool drawer config                                           |
-| `agentToolDrawerVisible`     | `boolean`                              | Tool drawer visibility state                                     |
-| `setAgentToolDrawerVisible`  | `Dispatch<SetStateAction<boolean>>`    | Toggle tool drawer                                               |
-| `custAtrr`                   | `UnknownObject\|null\|undefined`       | Custom attributes state                                          |
-| `setCustAtrr`                | `Dispatch<SetStateAction<...>>`        | Set custom attributes                                            |
-| `resetCustAtrr`              | `() => void`                           | Reset custom attributes                                          |
-| `projectId`                  | `string\|null\|undefined`              | Active project ID                                                |
-| `setProjectId`               | `Dispatch<SetStateAction<...>>`        | Set project ID                                                   |
+| Field                           | Type                                              | Description                                 |
+| ------------------------------- | ------------------------------------------------- | ------------------------------------------- |
+| `messages`                      | `ChatMessage[]`                                   | Array of conversation messages              |
+| `setMessages`                   | `Dispatch<SetStateAction<ChatMessage[]>>`         | Directly set messages                       |
+| `input`                         | `string`                                          | Current text input value                    |
+| `setInput`                      | `Dispatch<SetStateAction<string>>`                | Set input value                             |
+| `handleInputChange`             | `(e) => void`                                     | Bind to `<input onChange>`                  |
+| `handleSubmit`                  | `(e?, newMessage?, additionalConfig?) => Promise` | Submit a message                            |
+| `isLoading`                     | `boolean`                                         | Waiting for AI response                     |
+| `chatStreaming`                 | `boolean`                                         | AI response is actively streaming           |
+| `stopStream`                    | `() => Promise<void>`                             | Abort the active stream                     |
+| `chatConfig`                    | `ChatConfig`                                      | Current chat configuration                  |
+| `setChatConfig`                 | `Dispatch<SetStateAction<any>>`                   | Update chat config                          |
+| `conversationId`                | `string\|undefined`                               | Active conversation ID                      |
+| `setConversationId`             | `Dispatch<SetStateAction<string\|undefined>>`     | Set conversation ID                         |
+| `changeConversation`            | `(convId) => Promise<void>`                       | Load a different conversation               |
+| `changeConversationLoading`     | `boolean`                                         | Conversation switch in progress             |
+| `submitMessageFeedback`         | `(liked, messageObj, remark?) => Promise<void>`   | Submit like/dislike feedback                |
+| `stopConversation`              | `() => Promise<void>`                             | Stop the current conversation on the server |
+| `resetConversation`             | `() => Promise<void>`                             | Clear all state and start fresh             |
+| `artifacts`                     | `ChatArtifacts`                                   | Code/text artifacts from the agent          |
+| `setArtifacts`                  | `Dispatch<SetStateAction<ChatArtifacts>>`         | Set artifacts directly                      |
+| `agentArtifactDrawerVisible`    | `boolean`                                         | Artifact drawer visibility state            |
+| `setAgentArtifactDrawerVisible` | `Dispatch<SetStateAction<boolean>>`               | Toggle artifact drawer                      |
+| `closeAgentArtifactDrawer`      | `() => void`                                      | Close the artifact drawer                   |
+| `updateArtifact`                | `function`                                        | Persist artifact changes to the server      |
+| `agentToolDrawerConfig`         | `AgentToolDrawerConfig`                           | Tool drawer configuration                   |
+| `setAgentToolDrawerConfig`      | `Dispatch<SetStateAction<...>>`                   | Set tool drawer config                      |
+| `agentToolDrawerVisible`        | `boolean`                                         | Tool drawer visibility state                |
+| `setAgentToolDrawerVisible`     | `Dispatch<SetStateAction<boolean>>`               | Toggle tool drawer                          |
+| `custAtrr`                      | `UnknownObject\|null\|undefined`                  | Custom attributes state                     |
+| `setCustAtrr`                   | `Dispatch<SetStateAction<...>>`                   | Set custom attributes                       |
+| `resetCustAtrr`                 | `() => void`                                      | Reset custom attributes                     |
+| `projectId`                     | `string\|null\|undefined`                         | Active project ID                           |
+| `setProjectId`                  | `Dispatch<SetStateAction<...>>`                   | Set project ID                              |
 
 </details>
 
 <details>
-<summary><strong>Voice / LiveKit</strong></summary>
+<summary><strong>Voice </strong></summary>
 
-| Field                    | Type                                        | Description                                   |
-| ------------------------ | ------------------------------------------- | --------------------------------------------- |
-| `voiceStatus`            | `"idle"\|"connecting"\|"connected"\|"error"` | Current voice connection state                |
-| `voiceRoom`              | `Room\|null`                                | LiveKit Room instance                         |
-| `voiceParticipants`      | `Participant[]`                             | All room participants                         |
-| `voiceError`             | `string\|null`                              | Voice connection error                        |
-| `voiceAudioTracks`       | `{ [key: string]: Track\|null }`            | Audio tracks keyed by participant identity     |
-| `agentConnected`         | `boolean`                                   | Whether the AI agent has joined the room       |
-| `isMicrophoneEnabled`    | `boolean`                                   | Whether the local mic is on                    |
-| `connectToRoom`          | `() => Promise<void>`                       | Start a voice session                         |
-| `disconnectFromRoom`     | `() => void`                                | End the voice session                         |
-| `interruptAgent`         | `() => void`                                | Interrupt the agent mid-speech                |
-| `toggleMute`             | `(isMuted: boolean) => void`                | Toggle local microphone (`true` = mute)       |
-| `voiceConversationId`    | `any`                                       | Conversation ID for the voice session          |
-| `setVoiceConversationId` | `Dispatch<SetStateAction<any>>`             | Set voice conversation ID                     |
-| `conversationProjectId`  | `string\|null\|undefined`                   | Project ID for the voice conversation          |
-| `setConversationProjectId`| `Dispatch<SetStateAction<...>>`             | Set voice conversation project ID             |
+| Field                      | Type                                         | Description                                |
+| -------------------------- | -------------------------------------------- | ------------------------------------------ |
+| `voiceStatus`              | `"idle"\|"connecting"\|"connected"\|"error"` | Current voice connection state             |
+| `voiceRoom`                | `Room\|null`                                 | Room instance                              |
+| `voiceParticipants`        | `Participant[]`                              | All room participants                      |
+| `voiceError`               | `string\|null`                               | Voice connection error                     |
+| `voiceAudioTracks`         | `{ [key: string]: Track\|null }`             | Audio tracks keyed by participant identity |
+| `agentConnected`           | `boolean`                                    | Whether the AI agent has joined the room   |
+| `isMicrophoneEnabled`      | `boolean`                                    | Whether the local mic is on                |
+| `connectToRoom`            | `() => Promise<void>`                        | Start a voice session                      |
+| `disconnectFromRoom`       | `() => void`                                 | End the voice session                      |
+| `interruptAgent`           | `() => void`                                 | Interrupt the agent mid-speech             |
+| `toggleMute`               | `(isMuted: boolean) => void`                 | Toggle local microphone (`true` = mute)    |
+| `voiceConversationId`      | `any`                                        | Conversation ID for the voice session      |
+| `setVoiceConversationId`   | `Dispatch<SetStateAction<any>>`              | Set voice conversation ID                  |
+| `conversationProjectId`    | `string\|null\|undefined`                    | Project ID for the voice conversation      |
+| `setConversationProjectId` | `Dispatch<SetStateAction<...>>`              | Set voice conversation project ID          |
 
 </details>
 
@@ -262,7 +260,7 @@ The primary hook. Fetches agent details automatically, initialises text chat and
 Lower-level hook for text-only chat. Use this if you do **not** need voice capabilities.
 
 ```tsx
-import { useChatStream } from "@simplai/voice-agent-sdk";
+import { useChatStream } from "@simplai.ai/voice-agent-sdk";
 
 const chat = useChatStream({
   chatConfig: {
@@ -280,14 +278,14 @@ Must be used inside `<SimplAIProvider>`.
 
 ---
 
-#### `useLivekitAudio(props)`
+#### `useSimplaiAudio(props)`
 
 Lower-level hook for voice-only functionality. Use this if you are managing chat state separately.
 
 ```tsx
-import { useLivekitAudio } from "@simplai/voice-agent-sdk";
+import { useSimplaiAudio } from "@simplai.ai/voice-agent-sdk";
 
-const voice = useLivekitAudio({
+const voice = useSimplaiAudio({
   agentDetails: { agent_id: "...", agent_name: "..." },
   userDetails: { name: "User", id: "user-1" },
   setMessages: setMessages,
@@ -315,35 +313,7 @@ import type {
   AgentDetails,
   UseSimplAIVoiceAgentOptions,
   UseSimplAIVoiceAgentReturn,
-} from "@simplai/voice-agent-sdk";
-```
-
----
-
-## Architecture
-
-```
-@simplai/voice-agent-sdk
-├── SimplAIProvider          # React context: config, httpClient, endpoints
-│
-├── useSimplAIVoiceAgent     # Composite hook (recommended entry point)
-│   ├── fetchAgentDetails    # Auto-fetches agent config on mount
-│   ├── useChatStream        # SSE text streaming, message state, artifacts
-│   └── useLivekitAudio      # WebRTC voice via LiveKit + RNNoise denoising
-│
-├── API layer                # Thin wrappers around axios
-│   ├── agents.ts            # fetchAgentDetails, updateArtifact
-│   ├── audio.ts             # livekitTokenApi
-│   └── intract.ts           # initiateConversation, stopConversation, feedback
-│
-├── HTTP client              # Axios instance with auto-injected auth headers
-│   └── Request interceptor  # X-USER-ID, X-TENANT-ID, PIM-SID, X-PROJECT-ID
-│   └── Response interceptor # ok-flag handling, 511 retry (3x with 2s delay)
-│
-└── Utils
-    ├── stream.ts            # SSE decoding, chat detail parsing
-    ├── livekit.ts           # Room factory
-    └── helpers.ts           # Error extraction, JSON validation, markdown clean
+} from "@simplai.ai/voice-agent-sdk";
 ```
 
 ---
@@ -353,7 +323,7 @@ import type {
 ### Text Chat Only
 
 ```tsx
-import { SimplAIProvider, useChatStream } from "@simplai/voice-agent-sdk";
+import { SimplAIProvider, useChatStream } from "@simplai.ai/voice-agent-sdk";
 
 function TextChatApp() {
   return (
@@ -429,7 +399,10 @@ function TextChat() {
 ### Voice Agent with Avatar
 
 ```tsx
-import { SimplAIProvider, useSimplAIVoiceAgent } from "@simplai/voice-agent-sdk";
+import {
+  SimplAIProvider,
+  useSimplAIVoiceAgent,
+} from "@simplai.ai/voice-agent-sdk";
 
 function AvatarApp() {
   return (
@@ -515,7 +488,7 @@ function AvatarAgent() {
 ### Conversation History / Switch Conversations
 
 ```tsx
-import { useSimplAIVoiceAgent } from "@simplai/voice-agent-sdk";
+import { useSimplAIVoiceAgent } from "@simplai.ai/voice-agent-sdk";
 
 function ChatWithHistory() {
   const {
@@ -575,11 +548,16 @@ function ChatWithHistory() {
 ### Message Feedback
 
 ```tsx
-import { useSimplAIVoiceAgent, ChatMessage } from "@simplai/voice-agent-sdk";
+import { useSimplAIVoiceAgent, ChatMessage } from "@simplai.ai/voice-agent-sdk";
 
 function ChatWithFeedback() {
-  const { messages, submitMessageFeedback, input, handleInputChange, handleSubmit } =
-    useSimplAIVoiceAgent();
+  const {
+    messages,
+    submitMessageFeedback,
+    input,
+    handleInputChange,
+    handleSubmit,
+  } = useSimplAIVoiceAgent();
 
   const handleFeedback = async (msg: ChatMessage, liked: boolean) => {
     await submitMessageFeedback(liked, msg, liked ? "" : "Not helpful");
@@ -619,62 +597,6 @@ function ChatWithFeedback() {
   );
 }
 ```
-
----
-
-## Advanced Usage
-
-### Accessing the HTTP Client Directly
-
-For custom API calls using the same authenticated axios instance:
-
-```tsx
-import { useSimplAIContext } from "@simplai/voice-agent-sdk";
-
-function CustomComponent() {
-  const { httpClient, endpoints, config } = useSimplAIContext();
-
-  const fetchCustomData = async () => {
-    const res = await httpClient.get("/your/custom/endpoint", {
-      headers: { "X-PROJECT-ID": config.projectId },
-    });
-    return res.data;
-  };
-}
-```
-
-### Using Individual API Functions
-
-```tsx
-import {
-  fetchAgentDetailsApi,
-  livekitTokenApi,
-  initiateConversationApi,
-} from "@simplai/voice-agent-sdk";
-
-// These accept (httpClient, endpoints, params) — get httpClient from useSimplAIContext()
-```
-
----
-
-## How It Works
-
-### Text Chat Flow
-
-1. User calls `handleSubmit` with a message.
-2. SDK sends the message via `initiateConversationApi` to the server.
-3. SDK opens an SSE connection to `streamResponse/{messageId}/stream`.
-4. Streamed chunks are parsed by type (text, tool calls, citations, artifacts, planning steps, etc.) and appended to the `messages` array in real time.
-5. When the stream completes, `isLoading` and `chatStreaming` reset to `false`.
-
-### Voice Flow
-
-1. User calls `connectToRoom()`.
-2. SDK requests a LiveKit token from the server via `livekitTokenApi`.
-3. A LiveKit `Room` is created and connected to the WebSocket endpoint.
-4. RNNoise audio processing is initialised (AudioContext + WASM worklet) to denoise the microphone input before publishing.
-5. Room events (`DataReceived`, `ParticipantConnected`, `TrackSubscribed`, etc.) are handled to update participants, audio tracks, and messages.
-6. The `DataReceived` handler parses transcript JSON segments and updates the shared `messages` state from `useChatStream`.
 
 ---
 

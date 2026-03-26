@@ -1,22 +1,21 @@
 import { useCallback, useEffect, useState } from "react";
-import { useSimplAIContext } from "../context/SimplAIProvider";
 import { fetchAgentDetailsApi } from "../api/agents";
 import { X_PROJECT_ID } from "../constants";
+import { useSimplAIContext } from "../context/SimplAIProvider";
 import {
   AgentDetails,
-  ChatMessage,
   UseSimplAIVoiceAgentOptions,
   UseSimplAIVoiceAgentReturn,
 } from "../types";
 import useChatStream from "./useChatStream";
-import useLivekitAudio from "./useLivekitAudio";
+import useSimplaiAudio from "./useSimplaiAudio";
 
 /**
  * Primary composite hook for the SimplAI Voice Agent SDK.
  *
  * Automatically fetches agent details on mount, initialises both the SSE
- * text-chat stream (`useChatStream`) and the LiveKit voice room
- * (`useLivekitAudio`), and returns a single flat API that is the superset
+ * text-chat stream (`useChatStream`) and the voice room
+ * (`useSimplaiAudio`), and returns a single flat API that is the superset
  * of both hooks plus agent-detail state.
  *
  * Must be used within a `SimplAIProvider`.
@@ -67,7 +66,9 @@ const useSimplAIVoiceAgent = (
       }
     } catch (err: any) {
       setAgentError(
-        err?.response?.data?.message || err?.message || "Failed to fetch agent details",
+        err?.response?.data?.message ||
+          err?.message ||
+          "Failed to fetch agent details",
       );
     } finally {
       setAgentLoading(false);
@@ -106,8 +107,8 @@ const useSimplAIVoiceAgent = (
     }
   }, [agentDetails]);
 
-  // ─── LiveKit Audio ──────────────────────────────────────────────────────────
-  const livekitAudio = useLivekitAudio({
+  // ───  Audio ──────────────────────────────────────────────────────────
+  const agentAudio = useSimplaiAudio({
     agentDetails: {
       agent_id: agentDetails?.agent_id || config.agentId,
       agent_name: agentDetails?.agent_name,
@@ -176,22 +177,22 @@ const useSimplAIVoiceAgent = (
     updateArtifact: chatStream.updateArtifact,
     resetConversation: chatStream.resetConversation,
 
-    // Voice / LiveKit (all fields from useLivekitAudio)
-    voiceStatus: livekitAudio.status,
-    voiceRoom: livekitAudio.room,
-    voiceParticipants: livekitAudio.participants,
-    voiceError: livekitAudio.error,
-    voiceAudioTracks: livekitAudio.audioTracks,
-    agentConnected: livekitAudio.agentConnected,
-    isMicrophoneEnabled: livekitAudio.isMicrophoneEnabled,
-    connectToRoom: livekitAudio.connectToRoom,
-    disconnectFromRoom: livekitAudio.handleDisconnect,
-    interruptAgent: livekitAudio.interuptAgent,
-    toggleMute: livekitAudio.toggleMuteLocalParticipant,
-    voiceConversationId: livekitAudio.voiceConversationId,
-    setVoiceConversationId: livekitAudio.setVoiceConversationId,
-    conversationProjectId: livekitAudio.conversationProjectId,
-    setConversationProjectId: livekitAudio.setConversationProjectId,
+    // Voice  (all fields from useSimplaiAudio)
+    voiceStatus: agentAudio.status,
+    voiceRoom: agentAudio.room,
+    voiceParticipants: agentAudio.participants,
+    voiceError: agentAudio.error,
+    voiceAudioTracks: agentAudio.audioTracks,
+    agentConnected: agentAudio.agentConnected,
+    isMicrophoneEnabled: agentAudio.isMicrophoneEnabled,
+    connectToRoom: agentAudio.connectToRoom,
+    disconnectFromRoom: agentAudio.handleDisconnect,
+    interruptAgent: agentAudio.interuptAgent,
+    toggleMute: agentAudio.toggleMuteLocalParticipant,
+    voiceConversationId: agentAudio.voiceConversationId,
+    setVoiceConversationId: agentAudio.setVoiceConversationId,
+    conversationProjectId: agentAudio.conversationProjectId,
+    setConversationProjectId: agentAudio.setConversationProjectId,
   };
 };
 

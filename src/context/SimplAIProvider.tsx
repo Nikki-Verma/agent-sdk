@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useMemo } from "react";
-import { SimplAISDKConfig, SimplAIContextValue } from "../types";
-import { createHttpClient } from "../http";
 import endpoints from "../api/endpoints";
+import { createHttpClient } from "../http";
+import { SimplAIContextValue, SimplAISDKConfig } from "../types";
 
 const SimplAIContext = createContext<SimplAIContextValue | null>(null);
 
@@ -20,7 +20,7 @@ export interface SimplAIProviderProps {
  * React context provider that initialises the SimplAI SDK.
  *
  * Wrap your component tree with this provider to make all SDK hooks
- * (`useSimplAIVoiceAgent`, `useChatStream`, `useLivekitAudio`) available.
+ * (`useSimplAIVoiceAgent`, `useChatStream`, `useSimplaiAudio`) available.
  *
  * It creates a shared authenticated HTTP client and configures the API
  * endpoints automatically. The HTTP client injects auth headers
@@ -29,7 +29,7 @@ export interface SimplAIProviderProps {
  *
  * @example
  * ```tsx
- * import { SimplAIProvider } from "@simplai/voice-agent-sdk";
+ * import { SimplAIProvider } from "@simplai.ai/voice-agent-sdk";
  *
  * <SimplAIProvider config={{
  *   agentId: "agent-123",

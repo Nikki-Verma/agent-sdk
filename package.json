@@ -1,6 +1,6 @@
 {
   "name": "@simplai.ai/voice-agent-sdk",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "SimplAI Voice Agent SDK - React hooks for text chat and voice agent integration",
   "main": "dist/index.js",
   "module": "dist/index.mjs",

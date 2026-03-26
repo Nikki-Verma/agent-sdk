@@ -1,54 +1,57 @@
 // ─── Provider ────────────────────────────────────────────────────────────────
-export { SimplAIProvider } from "./context/SimplAIProvider";
+export { SimplAIProvider, useSimplAIContext } from "./context/SimplAIProvider";
 export type { SimplAIProviderProps } from "./context/SimplAIProvider";
-export { useSimplAIContext } from "./context/SimplAIProvider";
 
 // ─── Hooks ───────────────────────────────────────────────────────────────────
 export { default as useChatStream } from "./hooks/useChatStream";
-export { default as useLivekitAudio } from "./hooks/useLivekitAudio";
+export { default as useSimplaiAudio } from "./hooks/useSimplaiAudio";
 export { default as useSimplAIVoiceAgent } from "./hooks/useSimplAIVoiceAgent";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 export type {
-  SimplAISDKConfig,
-  SimplAIContextValue,
-  SDKEndpoints,
-  ChatMessage,
+  AgentDetails,
+  AgentToolDrawerConfig,
   Artifact,
   ChatArtifacts,
   ChatConfig,
-  UseChatStreamInput,
-  UseChatStreamOptions,
-  UseChatStreamInputMethod,
+  ChatMessage,
+  Headers,
   HttpMethod,
-  VoiceStatus,
-  AgentDetails,
-  UseLivekitAudioProps,
+  Params,
+  SDKEndpoints,
+  SimplAIContextValue,
+  SimplAISDKConfig,
+  UnknownObject,
+  UseChatStreamInput,
+  UseChatStreamInputMethod,
+  UseChatStreamOptions,
+  UseChatStreamReturn,
+  useSimplaiAudioProps,
+  useSimplaiAudioReturn,
   UseSimplAIVoiceAgentOptions,
   UseSimplAIVoiceAgentReturn,
-  UseChatStreamReturn,
-  UseLivekitAudioReturn,
-  AgentToolDrawerConfig,
-  UnknownObject,
-  Params,
-  Headers,
+  VoiceStatus,
 } from "./types";
 
 export { ChunkType } from "./types";
 
 // ─── Utilities ───────────────────────────────────────────────────────────────
-export { getChatDetails, getChatMessage, decodeStreamToJson } from "./utils/stream";
-export { createRoom } from "./utils/livekit";
+export { createRoom } from "./utils/audio";
 export {
-  getErrorFromApi,
   checkValidStringifiedJSON,
   getBrowserUseState,
   getCleanMarkdownString,
+  getErrorFromApi,
 } from "./utils/helpers";
+export {
+  decodeStreamToJson,
+  getChatDetails,
+  getChatMessage,
+} from "./utils/stream";
 
 // ─── API Functions ───────────────────────────────────────────────────────────
 export { fetchAgentDetailsApi, updateArtifactApi } from "./api/agents";
-export { livekitTokenApi } from "./api/audio";
+export { audioTokenApi } from "./api/audio";
 export {
   initiateConversationApi,
   stopConversationApi,
@@ -57,11 +60,11 @@ export {
 
 // ─── Constants ───────────────────────────────────────────────────────────────
 export {
-  EDGE_URL,
-  EDGE_EXTERNAL_URL,
   AGENT_SOCKET_ENDPOINT,
+  EDGE_EXTERNAL_URL,
+  EDGE_URL,
   RNNOISE_BASE,
-  WORKLET_URL,
-  WASM_URL,
   SIMD_WASM,
+  WASM_URL,
+  WORKLET_URL,
 } from "./constants";
